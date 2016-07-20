@@ -1,18 +1,17 @@
 package vivienkeegan.csc4320.filemanager;
 
-import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
@@ -22,6 +21,7 @@ public class MainActivity extends AppCompatActivity {
     private RecyclerView mRecyclerView;
     private RecyclerView.Adapter mAdapter;
     private RecyclerView.LayoutManager mLayoutManager;
+    private TextView mCurrentDirView;
     private String currentDirectory;
 
     @Override
@@ -32,6 +32,9 @@ public class MainActivity extends AppCompatActivity {
         currentDirectory = ROOT;
         //Log.i("fff", Environment.getDataDirectory().getAbsolutePath());
         mFileList = createFileList(currentDirectory);
+
+        mCurrentDirView = (TextView) findViewById(R.id.current_dir_view);
+        mCurrentDirView.setText(currentDirectory);
 
         mRecyclerView = (RecyclerView) findViewById(R.id.file_recycler_view);
 
@@ -61,6 +64,33 @@ public class MainActivity extends AppCompatActivity {
         }
 
         return fileList;
+    }
+
+    public void goToParentDirectory(View v) {
+        if (!currentDirectory.equals(ROOT)) {
+            File current = new File(currentDirectory);
+            setCurrentDirectory(current.getParent());
+        }
+    }
+
+    protected boolean isDirectory(int position) {
+        return mFileList.get(position).isDirectory();
+    }
+
+    protected void setCurrentDirectory(int position) {
+        try {
+            setCurrentDirectory(mFileList.get(position).getCanonicalPath());
+        } catch (IOException ioe) {
+            Log.i("FileManager_Error: ", "getCanonicalPath failed");
+        }
+    }
+
+    protected void setCurrentDirectory(String canonicalPath) {
+        currentDirectory = canonicalPath;
+        mFileList = createFileList(currentDirectory);
+        ((ListAdapter) mAdapter).setFileList(mFileList);
+        mAdapter.notifyDataSetChanged();
+        mCurrentDirView.setText(canonicalPath);
     }
 
     protected boolean deleteFile(int position) {

@@ -20,6 +20,10 @@ public class ListAdapter extends RecyclerView.Adapter<ListAdapter.ItemViewHolder
         mFileList = fileList;
     }
 
+    public void setFileList(List<File> list) {
+        mFileList = list;
+    }
+
     public boolean createDirectory(File newDir) {
         return (newDir.mkdir());
     }
@@ -81,14 +85,22 @@ public class ListAdapter extends RecyclerView.Adapter<ListAdapter.ItemViewHolder
 
         @Override
         public void onClick(View itemView) {
+            MainActivity context = (MainActivity) itemView.getContext();
             int position = getAdapterPosition();
 
-            MainActivity context = (MainActivity) itemView.getContext();
-            if (context.deleteFile(position)) {
-                Toast.makeText(context, "File deleted", Toast.LENGTH_SHORT).show();
-            } else {
-                Toast.makeText(context, "Unable to delete", Toast.LENGTH_SHORT).show();
+            if (context.isDirectory(position)) {
+                context.setCurrentDirectory(position);
             }
+
+//            context.setCurrentDirectory("/acct/");
+//            int position = getAdapterPosition();
+//
+//            MainActivity context = (MainActivity) itemView.getContext();
+//            if (context.deleteFile(position)) {
+//                Toast.makeText(context, "File deleted", Toast.LENGTH_SHORT).show();
+//            } else {
+//                Toast.makeText(context, "Unable to delete", Toast.LENGTH_SHORT).show();
+//            }
         }
     }
 }
