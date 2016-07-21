@@ -138,7 +138,7 @@ public class MainActivity extends AppCompatActivity {
         String path = mCurrentDirectory + "/" + newName;
 
         if (!getListAdapter().renameFile(position, path)) {
-            Toast.makeText(getParent(), "Unable to rename file/folder",
+            Toast.makeText(this, "Unable to rename file/folder",
                     Toast.LENGTH_SHORT).show();
         }
     }
