@@ -170,7 +170,7 @@ public class MainActivity extends AppCompatActivity {
     /******************
      * Dialogs        *
      ******************/
-    protected void showCreateDirDialog(View v) {
+    public void showCreateDirDialog(View v) {
         LayoutInflater layoutInflater = LayoutInflater.from(MainActivity.this);
         View promptView = layoutInflater.inflate(R.layout.create_folder_dialog, null);
         AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(MainActivity.this);
@@ -192,7 +192,7 @@ public class MainActivity extends AppCompatActivity {
         alertDialogBuilder.create().show();
     }
 
-    protected void showCreateFileDialog(View v) {
+    public void showCreateFileDialog(View v) {
         LayoutInflater layoutInflater = LayoutInflater.from(MainActivity.this);
         View promptView = layoutInflater.inflate(R.layout.create_file_dialog, null);
         AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(MainActivity.this);
