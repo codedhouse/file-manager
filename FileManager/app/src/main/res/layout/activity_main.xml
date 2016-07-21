@@ -20,32 +20,36 @@
             android:textStyle="bold"
             android:textSize="20sp"
             android:textColor="#000000"
+            android:background="@color/textViewTint"
             android:gravity="start|center" />
 
         <ImageButton
             android:layout_width="50dp"
-            android:layout_height="50dp"
+            android:layout_height="match_parent"
             android:src="@drawable/ic_arrow_upward_black_48dp"
             android:adjustViewBounds="true"
-            android:scaleType="fitXY"
+            android:scaleType="centerInside"
+            android:background="@color/imgButtonTint"
             android:contentDescription="@string/up_btn_desc"
             android:onClick="goToParentDirectory" />
 
         <ImageButton
             android:layout_width="50dp"
-            android:layout_height="50dp"
+            android:layout_height="match_parent"
+            android:background="@color/imgButtonTint"
             android:src="@drawable/ic_create_new_folder_black_48dp"
             android:adjustViewBounds="true"
-            android:scaleType="fitXY"
+            android:scaleType="centerInside"
             android:contentDescription="@string/mkdir_btn_desc"
             android:onClick="showCreateDirDialog" />
 
         <ImageButton
             android:layout_width="50dp"
-            android:layout_height="50dp"
+            android:layout_height="match_parent"
+            android:background="@color/imgButtonTint"
             android:src="@drawable/ic_note_add_black_48dp"
             android:adjustViewBounds="true"
-            android:scaleType="fitXY"
+            android:scaleType="centerInside"
             android:contentDescription="@string/mkfile_btn_desc"
             android:onClick="showCreateFileDialog" />
 
@@ -64,9 +68,12 @@
         android:orientation="horizontal">
         <Button
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="36dp"
             android:text="@string/app_folder"
+            android:background="@color/buttonTint"
             android:textAllCaps="true"
+            android:textSize="16sp"
+            android:textColor="@android:color/black"
             android:onClick="goToAppFolder" />
     </LinearLayout>
 
