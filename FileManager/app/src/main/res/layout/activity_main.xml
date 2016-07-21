@@ -31,6 +31,24 @@
             android:contentDescription="@string/up_btn_desc"
             android:onClick="goToParentDirectory" />
 
+        <ImageButton
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:src="@drawable/ic_create_new_folder_black_48dp"
+            android:adjustViewBounds="true"
+            android:scaleType="fitXY"
+            android:contentDescription="@string/mkdir_btn_desc"
+            android:onClick="showCreateDirDialog" />
+
+        <ImageButton
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:src="@drawable/ic_note_add_black_48dp"
+            android:adjustViewBounds="true"
+            android:scaleType="fitXY"
+            android:contentDescription="@string/mkfile_btn_desc"
+            android:onClick="showCreateFileDialog" />
+
     </LinearLayout>
 
     <android.support.v7.widget.RecyclerView
@@ -40,10 +58,17 @@
         android:layout_height="0dp"
         android:layout_weight="2" />
 
-    <Button
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/mkdir"
-        android:onClick="createFolder" />
+        android:orientation="horizontal">
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/app_folder"
+            android:textAllCaps="true"
+            android:onClick="goToAppFolder" />
+    </LinearLayout>
+
 
 </LinearLayout>

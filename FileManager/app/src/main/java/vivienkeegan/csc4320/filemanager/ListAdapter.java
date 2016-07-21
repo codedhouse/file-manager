@@ -1,66 +1,113 @@
 package vivienkeegan.csc4320.filemanager;
 
-import android.content.Context;
 import android.support.v7.widget.RecyclerView;
+import android.view.ContextMenu;
 import android.view.LayoutInflater;
+import android.view.Menu;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.List;
 
 public class ListAdapter extends RecyclerView.Adapter<ListAdapter.ItemViewHolder> {
     private List<File> mFileList;
+    private int mContextMenuPosition;
 
     public ListAdapter(List<File> fileList) {
         mFileList = fileList;
+        mContextMenuPosition = -1;
     }
+
+    @Override
+    public int getItemCount() { return mFileList.size(); }
+    public int getContextMenuPosition() { return mContextMenuPosition; }
+    public int getLastItemPosition() { return mFileList.size()-1; }
+    public File getFile(int position) { return mFileList.get(position); }
 
     public void setFileList(List<File> list) {
         mFileList = list;
+        notifyDataSetChanged();
     }
+    public void setContextMenuPosition(int i) { mContextMenuPosition = i; }
 
+    /******************
+     * File Operations
+     ******************/
     public boolean createDirectory(File newDir) {
-        return (newDir.mkdir());
+        if ((newDir.mkdir())) {
+            addToDataSet(newDir);
+            return true;
+        }
+        return false;
     }
 
-    public boolean deleteFile(int position, Context context) {
+    public boolean createFile(File newFile) {
+        try {
+            if (newFile.createNewFile()) {
+                addToDataSet(newFile);
+                return true;
+            }
+        } catch (IOException ioe) {
+            return false;
+        }
+        return false;
+    }
+
+    private void addToDataSet(File file) {
+        mFileList.add(file);
+        notifyItemInserted(getLastItemPosition());
+    }
+
+    public boolean renameFile(int position, String newName) {
+        File newFile = new File(newName);
+
+        if (mFileList.get(position).renameTo(newFile)) {
+            mFileList.set(position, newFile);
+            notifyItemChanged(position);
+            return true;
+        }
+
+        return false;
+    }
+
+    private boolean deleteFile(File file) {
+        if (file.isDirectory()) {
+            File[] contents = file.listFiles();
+            if (contents != null) {
+                for (File f : contents) {
+                    if (!deleteFile(f)) {
+                        return false;
+                    }
+                }
+            }
+        }
+        return file.delete();
+    }
+
+    public boolean deleteFile(int position) {
         try {
             File f = mFileList.get(position);
-            if (f.delete()) {
+
+            if (deleteFile(f)) {
                 mFileList.remove(position);
+                notifyItemRemoved(position);
+                return true;
             } else {
                 return false;
             }
         } catch (SecurityException se) {
-            Toast.makeText(context, "Permission denied", Toast.LENGTH_SHORT).show();
             return false;
         }
-
-        return true;
     }
 
-    @Override
-    public int getItemCount() {
-        return mFileList.size();
-    }
-
-    @Override
-    public void onBindViewHolder(ItemViewHolder fileItemViewHolder, int position) {
-        File li = mFileList.get(position);
-        fileItemViewHolder.mTextView.setText(li.getName());
-
-        if (li.isDirectory()) {
-            fileItemViewHolder.mImageView.setImageResource(R.drawable.ic_folder_black_48dp);
-        } else {
-            fileItemViewHolder.mImageView.setImageResource(R.drawable.ic_description_black_48dp);
-        }
-    }
-
+    /**********************
+     * ViewHolder
+     **********************/
     @Override
     public ItemViewHolder onCreateViewHolder(ViewGroup vg, int i) {
         View itemView = LayoutInflater.from(vg.getContext()).
@@ -69,8 +116,28 @@ public class ListAdapter extends RecyclerView.Adapter<ListAdapter.ItemViewHolder
         return new ItemViewHolder(itemView);
     }
 
-    public static class ItemViewHolder extends RecyclerView.ViewHolder
-            implements View.OnClickListener {
+    @Override
+    public void onBindViewHolder(final ItemViewHolder fileItemViewHolder, int position) {
+        File file = mFileList.get(position);
+        fileItemViewHolder.mTextView.setText(file.getName());
+
+        if (file.isDirectory()) {
+            fileItemViewHolder.mImageView.setImageResource(R.drawable.ic_folder_black_48dp);
+        } else {
+            fileItemViewHolder.mImageView.setImageResource(R.drawable.ic_description_black_48dp);
+        }
+
+        fileItemViewHolder.itemView.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                setContextMenuPosition(fileItemViewHolder.getAdapterPosition());
+                return false;
+            }
+        });
+    }
+
+    public class ItemViewHolder extends RecyclerView.ViewHolder
+            implements View.OnClickListener, View.OnCreateContextMenuListener {
         public ImageView mImageView;
         public TextView mTextView;
         public RelativeLayout mRelativeLayout;
@@ -78,6 +145,7 @@ public class ListAdapter extends RecyclerView.Adapter<ListAdapter.ItemViewHolder
         public ItemViewHolder(View itemView) {
             super(itemView);
             itemView.setOnClickListener(this);
+            itemView.setOnCreateContextMenuListener(this);
             mImageView = (ImageView) itemView.findViewById(R.id.item_icon);
             mTextView = (TextView) itemView.findViewById(R.id.item_name);
             mRelativeLayout = (RelativeLayout) itemView.findViewById(R.id.item_layout);
@@ -88,19 +156,21 @@ public class ListAdapter extends RecyclerView.Adapter<ListAdapter.ItemViewHolder
             MainActivity context = (MainActivity) itemView.getContext();
             int position = getAdapterPosition();
 
-            if (context.isDirectory(position)) {
+            if (getFile(position).isDirectory()) {
                 context.setCurrentDirectory(position);
             }
+        }
 
-//            context.setCurrentDirectory("/acct/");
-//            int position = getAdapterPosition();
-//
-//            MainActivity context = (MainActivity) itemView.getContext();
-//            if (context.deleteFile(position)) {
-//                Toast.makeText(context, "File deleted", Toast.LENGTH_SHORT).show();
-//            } else {
-//                Toast.makeText(context, "Unable to delete", Toast.LENGTH_SHORT).show();
-//            }
+        @Override
+        public void onCreateContextMenu(ContextMenu menu, View v,
+                                        ContextMenu.ContextMenuInfo menuInfo) {
+            int position = getAdapterPosition();
+            menu.setHeaderTitle(getFile(position).getName());
+
+            //menu.add(Menu.NONE, R.id.get_info, Menu.NONE, R.string.view_file_info);
+            menu.add(Menu.NONE, R.id.rename, Menu.NONE, R.string.rename_menu_item);
+            menu.add(Menu.NONE, R.id.delete, Menu.NONE, R.string.delete_menu_item);
+
         }
     }
 }
