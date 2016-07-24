@@ -1,4 +1,4 @@
 # README #
 
 A simple Android file manager application.  
-It was initially created as a project for Georgia State University's undergraduate course on Operating Systems (Summer 2016).
+Initially created as a programming project for Operating Systems (CSC 4320), Summer 2016, Georgia State University.
