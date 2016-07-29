@@ -1,6 +1,7 @@
 package vivienkeegan.csc4320.filemanager;
 
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -12,27 +13,59 @@ import android.widget.TextView;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 public class ListAdapter extends RecyclerView.Adapter<ListAdapter.ItemViewHolder> {
+
+    private String mCurrentDirectory;
     private List<File> mFileList;
     private int mContextMenuPosition;
 
-    public ListAdapter(List<File> fileList) {
-        mFileList = fileList;
+    public ListAdapter(String selectedDirectory) {
+        mCurrentDirectory = selectedDirectory;
         mContextMenuPosition = -1;
+        mFileList = new ArrayList<>();
+        File directory = new File(selectedDirectory);
+
+        if (directory.exists()) {
+            File[] files = directory.listFiles();
+            for (File f : files) {
+                if (f.canRead()) {
+                    mFileList.add(f);
+                }
+            }
+        } else {
+            Log.i("FileManager: ", "Directory does not exist");
+        }
     }
 
     @Override
     public int getItemCount() { return mFileList.size(); }
     public int getContextMenuPosition() { return mContextMenuPosition; }
+    public String getCurrentDirectory() { return mCurrentDirectory; }
     public int getLastItemPosition() { return mFileList.size()-1; }
     public File getFile(int position) { return mFileList.get(position); }
 
-    public void setFileList(List<File> list) {
-        mFileList = list;
-        notifyDataSetChanged();
+    public void setDirectory(String newDirectory) {
+        mCurrentDirectory = newDirectory;
+        mContextMenuPosition = -1;
+        mFileList = new ArrayList<>();
+        File directory = new File(mCurrentDirectory);
+
+        if (directory.exists()) {
+            File[] files = directory.listFiles();
+            for (File f : files) {
+                if (f.canRead()) {
+                    mFileList.add(f);
+                }
+            }
+            notifyDataSetChanged();
+        } else {
+            Log.i("FileManager: ", "Directory does not exist");
+        }
     }
+
     public void setContextMenuPosition(int i) { mContextMenuPosition = i; }
 
     /******************

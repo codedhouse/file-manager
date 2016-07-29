@@ -16,72 +16,37 @@ import android.widget.Toast;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
     private static String ROOT = "/";
-
-    private RecyclerView.Adapter mAdapter;
+    private ListAdapter mAdapter;
     private TextView mCurrentDirView;
-    private String mCurrentDirectory;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        mCurrentDirectory = ROOT;
-        List<File> fileList = createFileList(mCurrentDirectory);
-
+        mAdapter = new ListAdapter(ROOT);
         mCurrentDirView = (TextView) findViewById(R.id.current_dir_view);
-        mCurrentDirView.setText(mCurrentDirectory);
-
+        mCurrentDirView.setText(mAdapter.getCurrentDirectory());
         RecyclerView recyclerView = (RecyclerView) findViewById(R.id.file_recycler_view);
-        registerForContextMenu(recyclerView);
-
-        // Use this to improve performance if changes in content do not change
-        // the layout size of the RecyclerView
         recyclerView.setHasFixedSize(true);
-
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        mAdapter = new ListAdapter(fileList);
         recyclerView.setAdapter(mAdapter);
-    }
-
-    public ListAdapter getListAdapter() { return (ListAdapter) mAdapter; }
-
-    /* Generate a list of the current directory's contents.
-    *  Exclude files that can't be read by this application. */
-    protected List<File> createFileList(String path) {
-        List<File> fileList = new ArrayList<>();
-        File directory = new File(path);
-
-        if (directory.exists()) {
-            File[] files = directory.listFiles();
-            for (File f : files) {
-                if (f.canRead()) {
-                    fileList.add(f);
-                }
-            }
-        } else {
-            Log.i("FileManager: ", "Directory does not exist");
-        }
-
-        return fileList;
+        registerForContextMenu(recyclerView);
     }
 
     protected void setCurrentDirectory(int position) {
         try {
-            setCurrentDirectory(getListAdapter().getFile(position).getCanonicalPath());
+            setCurrentDirectory(mAdapter.getFile(position).getCanonicalPath());
         } catch (IOException ioe) {
             Log.i("FileManager: ", "Error setting current directory.");
         }
     }
 
     protected void setCurrentDirectory(String canonicalPath) {
-        mCurrentDirectory = canonicalPath;
-        getListAdapter().setFileList(createFileList(mCurrentDirectory));
+        mAdapter.setDirectory(canonicalPath);
         mCurrentDirView.setText(canonicalPath);
     }
 
@@ -97,8 +62,8 @@ public class MainActivity extends AppCompatActivity {
     /* Navigate to the current directory's parent directory,
      * or root directory if parent can't be read. */
     public void goToParentDirectory(View v) {
-        if (!mCurrentDirectory.equals(ROOT)) {
-            File current = new File(mCurrentDirectory);
+        if (!mAdapter.getCurrentDirectory().equals(ROOT)) {
+            File current = new File(mAdapter.getCurrentDirectory());
             File parent = current.getParentFile();
 
             if (parent.canRead()) {
@@ -110,41 +75,34 @@ public class MainActivity extends AppCompatActivity {
     }
 
     protected void createDirectory(String name) {
-        String path = mCurrentDirectory + "/" + name;
+        String path = mAdapter.getCurrentDirectory() + "/" + name;
         File newDir = new File(path);
 
-        if (!getListAdapter().createDirectory(newDir)) {
+        if (!mAdapter.createDirectory(newDir)) {
             Toast.makeText(this, "Unable to create directory", Toast.LENGTH_SHORT).show();
         }
-
-        //mFileList.add(newDir);
-        //mAdapter.notifyDataSetChanged();
     }
 
     protected void createFile(String name) {
-        String path = mCurrentDirectory + "/" + name;
-
+        String path = mAdapter.getCurrentDirectory() + "/" + name;
         File newFile = new File(path);
 
-        if (!getListAdapter().createFile(newFile)) {
+        if (!mAdapter.createFile(newFile)) {
             Toast.makeText(this, "Unable to create folder", Toast.LENGTH_SHORT).show();
-        } else {
-            //mFileList.add(newFile);
-            //mAdapter.notifyDataSetChanged();
         }
     }
 
     protected void renameFile(int position, String newName) {
-        String path = mCurrentDirectory + "/" + newName;
+        String path = mAdapter.getCurrentDirectory() + "/" + newName;
 
-        if (!getListAdapter().renameFile(position, path)) {
+        if (!mAdapter.renameFile(position, path)) {
             Toast.makeText(this, "Unable to rename file/folder",
                     Toast.LENGTH_SHORT).show();
         }
     }
 
     protected void deleteFile(int position) {
-        if (!getListAdapter().deleteFile(position)) {
+        if (!mAdapter.deleteFile(position)) {
             Toast.makeText(this, "Unable to delete", Toast.LENGTH_SHORT).show();
         }
     }
@@ -154,7 +112,7 @@ public class MainActivity extends AppCompatActivity {
      ******************/
     @Override
     public boolean onContextItemSelected(MenuItem item) {
-        int position = getListAdapter().getContextMenuPosition();
+        int position = mAdapter.getContextMenuPosition();
 
         switch(item.getItemId()) {
             case R.id.rename:
@@ -243,7 +201,7 @@ public class MainActivity extends AppCompatActivity {
         AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(MainActivity.this);
         alertDialogBuilder.setView(promptView);
 
-        File selectedFile = getListAdapter().getFile(position);
+        File selectedFile = mAdapter.getFile(position);
         String fileType = selectedFile.isDirectory() ? "folder" : "file";
 
         TextView confirmText = (TextView) promptView.findViewById(R.id.deleteFileConfirmTextView);
@@ -264,12 +222,4 @@ public class MainActivity extends AppCompatActivity {
 
         alertDialogBuilder.create().show();
     }
-
-//    protected String getFileName(int position) {
-//        return mFileList.get(position).getName();
-//    }
-//
-//    protected boolean isDirectory(int position) {
-//        return mFileList.get(position).isDirectory();
-//    }
 }
